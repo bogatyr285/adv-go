@@ -41,8 +41,9 @@ func Serialize(obj interface{}) string {
 		omitempty := len(parts) > 1 && parts[1] == "omitempty"
 
 		fieldValue := v.Field(i)
+		zero := reflect.Zero(fieldValue.Type()).Interface()
 
-		if omitempty && isZero(fieldValue) {
+		if omitempty && reflect.DeepEqual(fieldValue.Interface(), zero) {
 			continue
 		}
 
@@ -66,19 +67,6 @@ func Serialize(obj interface{}) string {
 	}
 
 	return strings.TrimSuffix(builder.String(), "\n")
-}
-
-func isZero(v reflect.Value) bool {
-	switch v.Kind() {
-	case reflect.String:
-		return v.String() == ""
-	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		return v.Int() == 0
-	case reflect.Bool:
-		return !v.Bool()
-	default:
-		return false
-	}
 }
 
 func TestSerialization(t *testing.T) {
